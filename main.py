@@ -1,10 +1,17 @@
-import pandas as pd
+"""
+#import pandas as pd
 from tkinter import *
 import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import filedialog, messagebox, ttk
+#from datetime import timedelta, datetime
+#import copy
+#from job import Job
+#from slots import Slot
+"""
+from schedule_utils import *
+#from default_machines_days import *
 
-from datetime import timedelta, datetime
 
 
 
@@ -20,69 +27,20 @@ from datetime import timedelta, datetime
 
 
 ##############################   ADD / EDIT MACHINES   #####################################################
-###TEST DATA:    searh for machine position with: EG : lathes.index(search)), returns zero-based index position
-mills = ["VMC-2", "VMC-1", "VM-10", "VM10-2", "VMX-30", "VMX-30-4"]
-lathes = ["XYZ", "TM8-2", "TM8-1", "TM-6", "TM-10"]
+###TEST DATA:    
+
 
 #Machine name
 #Process (mill / turn / router)
-
-
 
 
 ##############################    ADD WEEK             ###########################################################
 #define hours available for each day
 #add week to list
 
-machines_list = ["XYZ", "TM-6", "TM8-2", "TM8-1", "VMX-30", "VMX-30-4", "VM-10", "VM10-2", "VMC-2", "VMC-1"]
-days_list = [["Monday", 8], ["Tuesday", 8], ["Wednesday", 8], ["Thursday", 8],
-                 ["Friday", 5], ["Saturday", 5], ["Sunday", 5]]
+
 
 start_date = datetime.today() + timedelta(days=2)
-print("Today: {}, startdate {}".format(datetime.today(), start_date))
-
-
-def create_week(machines_list, days_list, start_date):
-    # create blank dataframe from days_list * slot numbers
-    day_headers_list = []
-    for day in days_list:
-        day_headers_list.append(day[0])
-    print("Created day header list: {}".format(day_headers_list))
-    
-    date_headers = []
-    date = start_date
-    for day in days_list:
-        date_headers.append(date.strftime("%d %b %y"))
-        date = date + timedelta(days=1)
-    print("Created date header list: {}".format(date_headers))
-   
-    df_slots = pd.DataFrame(columns=day_headers_list)  # CREATE DATAFRAME AND ADD HEADERS
-    df_slots.loc[0] = day_headers_list
-    df_slots.loc[1] = date_headers
-
-    for row in range(0, len(machines_list)):  # FOR EVERY MACHINE ROW...
-        rows = []
-        for col in range(0, len(day_headers_list)):   # FOR EVERY COLUMN ADD A "0"
-            rows.append(['', 8])
-        df_length = len(df_slots)  # STORE LENGTH OF DATAFRAME IN df_length
-        df_slots.loc[df_length] = rows  # ADD rows LIST CONTENTS TO EACH NEW DATAFRAME ROW
-
-    machines_list.insert(0, "Date")
-    machines_list.insert(0, "Day")
-    #print("Machine list after insert: {}".format(df_cols_list))
-
-    df_slots['Machines'] = machines_list  # ADD COLUMN WITH MACHINE NAMES
-    df_slots = df_slots.set_index('Machines')
-    # MAKE THE MACHINES COLUMN THE INDEX ROW
-    # (TO ALLOW CALLING SPECIFIC ROW VIA MACHINE NAME
-
-    # slots_final_list = df_slots.values.tolist()
-    
-    return df_slots
-
-
-
-
 
 
 ##############################   DRAW SCHEDULE    ##############################################################
@@ -104,15 +62,6 @@ filename = 'active_ops.csv'
 
 
 ###OUTPUT: create jobs list
-def createJobsList(filename):
-    df = pd.read_csv(filename)
-    #put df in order of required date, then wo #, then op #
-    df["REQ'D DATE"] = df["REQ'D DATE"].apply(lambda x: datetime.strptime(x, '%d/%m/%Y'))
-    df = df.sort_values(by=["REQ'D DATE", "WO ref", "OP #"])
-    df = df.reset_index(drop=True)
-
-    return df
-
 
 
 
@@ -120,8 +69,6 @@ def createJobsList(filename):
 
 ##################################   SCHEDULE JOBS   ############################################################
 
-def scheduleJobs(jobs_df):
-    pass
     #click on machine / day on schedule
     ##CHOICE OF:
     #    display list of jobs not scheduled      #user selects job from Treeview
@@ -151,13 +98,36 @@ def scheduleJobs(jobs_df):
 #start date for each machine
 
 
-
-
-
-df = createJobsList(filename)
 schedule_df = create_week(machines_list, days_list, start_date)
-print(schedule_df)
 
-pd.set_option("display.max_rows", None, "display.max_columns", None)
+global jobs_list
+jobs_list = create_jobs_list(filename)   ##TO DO: round hours up to nearest 0.25 hr
+#print(jobs_list[1].wo, jobs_list[1].process, jobs_list[1].allocated)
 
-#print(df[["REQ'D DATE", "WO ref", "OP #", "PROCESS"]])
+
+#TEST VALUES
+scheduleWO(schedule_df, jobs_list, jobs_list[5])
+scheduleWO(schedule_df, jobs_list, jobs_list[3])
+scheduleWO(schedule_df, jobs_list, jobs_list[77])
+#scheduleWO(schedule_df, jobs_list[99])
+
+"""
+print("Job status: {}".format(jobs_list[5].slots))
+print("Job status: {}".format(jobs_list[3].slots))
+print("Job status: {}".format(jobs_list[77].slots))
+print("Job status: {}".format(jobs_list[99].slots))
+print("Job status: {}".format(jobs_list[199].slots))
+
+print("Schedule DF id{}:\n{}".format(id(schedule_df), schedule_df))
+new_df = exportDataframeProperty(schedule_df, 'job')
+new_df_hrs = exportDataframeProperty(schedule_df, 'avail_hours')
+
+#PRINT JOBS AND HOURS LISTS
+#pd.set_option("display.max_rows", None, "display.max_columns", None)
+print("\n\n")
+print("New DF job id: {}: \n{}".format(id(new_df), new_df))
+#new_df.to_csv('jobs_export.csv')
+print("\n\n")
+#print("New DF hours id: {}: \n{}".format(id(new_df_hrs), new_df_hrs))
+new_df_hrs.to_csv('hours_export.csv')
+"""

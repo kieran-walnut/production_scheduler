@@ -1,59 +1,15 @@
-"""
-THIS FILE HAS METHODS TO CREATE BLANK DATAFRAME FOR WEEK.
-THE DATAFRAME IS POPULATED BY Slots CLASS OBJECTS.
-THE exportDataframeProperty FUNCTION ALLOWS SPECIFIC Slot PROPERTIES TO BE EXPORTED TO A NEW DATAFRAME
-"""
-
-
 import pandas as pd
-from tkinter import *
-import tkinter as tk
-import tkinter.font as tkFont
-from tkinter import filedialog, messagebox, ttk
 from datetime import timedelta, datetime
 import copy
-
-jobs_test = [["Job 1-4", 4], ["Job 2-2", 2], ["Job 3-2", 2],["Job 4-8", 8], ["Job 5-2", 2]]
-
-machines_list = ["TM-6", "TM8-2", "TM8-1", "VMX-30", "VMX-30-4", "VM-10", "VM10-2", "VMC-2", "VMC-1", "XYZ"]
-days_list = [["Monday", 8], ["Tuesday", 8], ["Wednesday", 8], ["Thursday", 8],
-                 ["Friday", 5], ["Saturday", 5], ["Sunday", 5]]
-
-start_date = datetime.today() + timedelta(days=2)
-
-filename = 'active_ops.csv'
-
-
-class Job():
-    def __init__(self, job):
-        # columns = [0 WO ref, 1 PROCESS, 2 PART #, 3 PART DESCRIPT
-        # 4 CUSTOMER, 5 HOURS O/S, 6 OP #, 7 OP DESCRIPT, 8 REQ'D DATE]
-        self.wo = job[0]
-        self.process = job[1]
-        self.part_no = job[2]
-        self.descript = job[3]
-        self.cust = job[4]
-        self.hours = job[5]   ##TO DO: round hours up to nearest 0.25 hr
-        self.hours_tba = self.hours
-        self.op_no = job[6]
-        self.op_desc = job[7]
-        self.req_date = job[8]
-        self.label = str(job[4])[:10] + "\n" + str(job[2])[8:] + "\n" # label is mix of cust + part no
-        self.slots = []
-        self.allocated = False
-        self.isLate = False
-        self.shortName = None
-
-
-
-class Slot():
-    def __init__(self, avail_hours):
-        self.avail_hours = avail_hours
-        self.job = ""
-
+from job import Job
+from slots import Slot
+from default_machines_days import *
 
 
 def create_jobs_list(filename):
+    """
+    Cycles through all ops in active ops file and adds the ops to the jobs_list
+    """
     ops_df = pd.read_csv(filename)
     ops_list = ops_df.values.tolist()
     jobs_list = []  # create job list
@@ -68,7 +24,10 @@ def create_jobs_list(filename):
 
 
 def create_week(machines_list, days_list, start_date):
-    # create blank dataframe from days_list * slot numbers
+    """
+    Create blank dataframe from days_list * slot numbers
+    """
+
     day_headers_list = []
     for day in days_list:
         day_headers_list.append(day[0])
@@ -120,7 +79,7 @@ def exportDataframeProperty(df, property):
     for machine in machines_list[2:]:
         day_jobs_list = []
         for day in days_list:
-            day_jobs_list.append( getattr(schedule_df[day[0]][machine], property) )
+            day_jobs_list.append( getattr(df[day[0]][machine], property) )
         jobs_list.append(day_jobs_list)
 
 
@@ -136,6 +95,10 @@ def exportDataframeProperty(df, property):
     return new_df
 
 def addWeek(schedule_df):
+    """
+    Adds another week to the schedule. 
+    This is triggered if a job's length is greater than available hours in the current week. 
+    """
     pass
     #initially use day_list to repeat week
     #append another week to days list
@@ -144,7 +107,13 @@ def addWeek(schedule_df):
     #return schdedule_df
 
 
-def scheduleWO(schedule_df, wo):
+def scheduleWO(schedule_df, jobs_list, wo):
+    """
+    Places a WO into the schedule dataframe. Looks for all ops
+    for a WO. Need to add GUI to allow which ops to be scheduled. 
+    Need to add GUI to choose which machine to target to
+    """
+
     ##check WO not allocated
     print("Scheduling WO {} {} {}".format(wo.wo, wo.label, wo.process))
     #list ops on wo and ask which ops are being allocated
@@ -156,11 +125,12 @@ def scheduleWO(schedule_df, wo):
     def sort_ops(e):   ##SORT OPS LIST BY OP No
         return getattr(e, 'op_no')
     wo_ops_list.sort(key=sort_ops)
-    print("WO ops to be allocated: \n")
+    #print("WO ops to be allocated: \n")
+    """
     for wo_op in wo_ops_list:
         print("{} {}, Hours: {}".format(wo_op.op_no, wo_op.process, wo_op.hours))
     print("\n\n")
-    
+    """
     #assume all ops are being added in this test. 
     ##TO DO: confirm ops which are being scheduled via GUI
 
@@ -188,12 +158,12 @@ def scheduleWO(schedule_df, wo):
                         wo.slots += [target_machine, (schedule_df.columns[x])] 
                         wo.hours_tba = 0
         wo.allocated = True
-    
+    """
     for x in range(schedule_df.shape[1]): 
         print((schedule_df.columns[x]))
         slot_hours = schedule_df.loc[target_machine][(schedule_df.columns[x])].job
         print("Slot hours: {}".format(slot_hours))
-    
+    """
 
     ####else cell.avail_hours -= wo.hours, cell.job = wo.label
     #####once wo.hours_tba < 0.25 wo.allocated = True
@@ -207,37 +177,4 @@ def scheduleWO(schedule_df, wo):
     #Get start date at last date in schedule + 1
     #Create separate dataframe from create_week funtion
     #Place the dataframe side by side with existing schedule  - pd.concat([first_df, new_df], axis=1)    ##AXIS = 1 MEANS ADD AT R.H.S. OF EXISTING DF
-    
-
-
-schedule_df = create_week(machines_list, days_list, start_date)
-
-jobs_list = create_jobs_list(filename)   ##TO DO: round hours up to nearest 0.25 hr
-
-#print(jobs_list[1].wo, jobs_list[1].process, jobs_list[1].allocated)
-
-
-#TEST VALUES
-scheduleWO(schedule_df, jobs_list[5])
-scheduleWO(schedule_df, jobs_list[3])
-scheduleWO(schedule_df, jobs_list[77])
-#scheduleWO(schedule_df, jobs_list[99])
-
-print("Job status: {}".format(jobs_list[5].slots))
-print("Job status: {}".format(jobs_list[3].slots))
-print("Job status: {}".format(jobs_list[77].slots))
-print("Job status: {}".format(jobs_list[99].slots))
-print("Job status: {}".format(jobs_list[199].slots))
-
-print("Schedule DF id{}:\n{}".format(id(schedule_df), schedule_df))
-new_df = exportDataframeProperty(schedule_df, 'job')
-new_df_hrs = exportDataframeProperty(schedule_df, 'avail_hours')
-
-#PRINT JOBS AND HOURS LISTS
-print("\n\n")
-print("New DF job id: {}: \n{}".format(id(new_df), new_df))
-#new_df.to_csv('jobs_export.csv')
-print("\n\n")
-#print("New DF hours id: {}: \n{}".format(id(new_df_hrs), new_df_hrs))
-new_df_hrs.to_csv('hours_export.csv')
 
