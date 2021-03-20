@@ -1,16 +1,18 @@
 """
-#import pandas as pd
+import pandas as pd
 from tkinter import *
 import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import filedialog, messagebox, ttk
-#from datetime import timedelta, datetime
-#import copy
-#from job import Job
-#from slots import Slot
+from datetime import timedelta, datetime
+import copy
+from job import Job
+from slots import Slot
+from default_machines_days import *
 """
+
 from schedule_utils import *
-#from default_machines_days import *
+
 
 
 
@@ -27,20 +29,19 @@ from schedule_utils import *
 
 
 ##############################   ADD / EDIT MACHINES   #####################################################
-###TEST DATA:    
-
-
 #Machine name
 #Process (mill / turn / router)
+#INFO WILL BE SAVED TO default_machines_days.py
+
+
 
 
 ##############################    ADD WEEK             ###########################################################
 #define hours available for each day
 #add week to list
+start_date = datetime.today() + timedelta(days=2)    #THIS CAN BE SET VIA GUI AT FIRST INSTANCE. 
 
 
-
-start_date = datetime.today() + timedelta(days=2)
 
 
 ##############################   DRAW SCHEDULE    ##############################################################
@@ -57,11 +58,10 @@ start_date = datetime.today() + timedelta(days=2)
 ##############################   IMPORT / UPDATE JOBS LIST   ############################################
 
 ###INPUTS: active_ops.csv
-#take jobs list from active_ops.csv
+#take jobs list from active_ops.csv    #GOING FORWARD THIS CAN BE VIA ACCESS TO DATABASE
 filename = 'active_ops.csv'
-
-
 ###OUTPUT: create jobs list
+jobs_list = create_jobs_list(filename)   ##TO DO: round hours up to nearest 0.25 hr
 
 
 
@@ -98,11 +98,9 @@ filename = 'active_ops.csv'
 #start date for each machine
 
 
-schedule_df = create_week(machines_list, days_list, start_date)
 
-global jobs_list
-jobs_list = create_jobs_list(filename)   ##TO DO: round hours up to nearest 0.25 hr
-#print(jobs_list[1].wo, jobs_list[1].process, jobs_list[1].allocated)
+
+schedule_df = create_week(machines_list, days_list, start_date)    #CREATE INITIAL WEEK 
 
 
 #TEST VALUES
