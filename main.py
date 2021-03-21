@@ -100,16 +100,21 @@ jobs_list = create_jobs_list(filename)   ##TO DO: round hours up to nearest 0.25
 
 
 
-schedule_df = create_week(machines_list, days_list, start_date)    #CREATE INITIAL WEEK 
-
+schedule_df = createWeek(machines_list, days_list, start_date)    #CREATE INITIAL WEEK 
+schedule_df = addWeek(schedule_df)
+schedule_df = addWeek(schedule_df)
+schedule_df = addWeek(schedule_df)
+schedule_df.to_csv("hope this works.csv")
+print(schedule_df)
 
 #TEST VALUES
+"""
 scheduleWO(schedule_df, jobs_list, jobs_list[5])
 scheduleWO(schedule_df, jobs_list, jobs_list[3])
 scheduleWO(schedule_df, jobs_list, jobs_list[77])
 #scheduleWO(schedule_df, jobs_list[99])
 
-"""
+
 print("Job status: {}".format(jobs_list[5].slots))
 print("Job status: {}".format(jobs_list[3].slots))
 print("Job status: {}".format(jobs_list[77].slots))

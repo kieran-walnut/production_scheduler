@@ -21,13 +21,10 @@ def create_jobs_list(filename):
     return jobs_list
 
 
-
-
-def create_week(machines_list, days_list, start_date):
+def createWeek(machines_list, days_list, start_date):
     """
     Create blank dataframe from days_list * slot numbers
     """
-
     day_headers_list = []
     for day in days_list:
         day_headers_list.append(day[0])
@@ -38,9 +35,8 @@ def create_week(machines_list, days_list, start_date):
         date_headers.append(date.strftime("%d %b %y"))
         date = date + timedelta(days=1)
    
-    df_slots = pd.DataFrame(columns=day_headers_list)  # CREATE DATAFRAME AND ADD HEADERS
+    df_slots = pd.DataFrame(columns=date_headers)  # CREATE DATAFRAME AND ADD HEADERS
     df_slots.loc[0] = day_headers_list
-    df_slots.loc[1] = date_headers
 
     for row in range(0, len(machines_list)):  # FOR EVERY MACHINE ROW...
         rows = []
@@ -51,28 +47,24 @@ def create_week(machines_list, days_list, start_date):
         df_length = len(df_slots)  # STORE LENGTH OF DATAFRAME IN df_length
         df_slots.loc[df_length] = rows  # ADD rows LIST CONTENTS TO EACH NEW DATAFRAME ROW
 
-    machines_list.insert(0, "Date")
     machines_list.insert(0, "Day")
     #print("Machine list after insert: {}".format(df_cols_list))
 
     df_slots['Machines'] = machines_list  # ADD COLUMN WITH MACHINE NAMES
     df_slots = df_slots.set_index('Machines')
     # MAKE THE MACHINES COLUMN THE INDEX ROW
-    # (TO ALLOW CALLING SPECIFIC ROW VIA MACHINE NAME
+    # (TO ALLOW CALLING SPECIFIC ROW VIA MACHINE NAME)
 
-    # slots_final_list = df_slots.values.tolist()
+    machines_list.pop(0)   #Remove the Days item from the list
     
     return df_slots
 
 
-
 def exportDataframeProperty(df, property):
-    
     """
-    RETURNS PROPERTY OF OBJECTS IN DATAFRAME.
-    CAN USE TO CREATE DATAFRAME WITH JOB NAMES ONLY, OR AVAILABLE HOURS
+    Returns a given property of objects in the schedule_df
+    Can use this to create dataframs with job names, or with available hours.
     """
-
     new_df = copy.copy(df)  #CREATES NEW DATAFRAME OBJECT AND LEAVES THE schedule_df UNCHANGED
 
     jobs_list= []
@@ -94,17 +86,35 @@ def exportDataframeProperty(df, property):
 
     return new_df
 
+
+def returnNewStartDate(schedule_df):
+    """
+    Finds last date in the schedule and returns next week start date
+    """
+    last_date_posn = len(schedule_df.columns) - 1
+    lastCurrentDate = schedule_df.columns[-1]
+    date_time_obj = datetime.strptime(lastCurrentDate, '%d %b %y')
+
+    new_week_start_date = date_time_obj + timedelta(days=1)
+    return new_week_start_date
+
+
 def addWeek(schedule_df):
     """
-    Adds another week to the schedule. 
-    This is triggered if a job's length is greater than available hours in the current week. 
+    Adds a blank week to the schedule_df. 
+    Currently uses default days list. 
+    TO DO: Can use GUI to confirm day hours going forward
     """
-    pass
-    #initially use day_list to repeat week
-    #append another week to days list
-    #use createWeek function to create newWeekDF
-    #append newWeekDF to schedule_df
-    #return schdedule_df
+    #find new week start date
+    new_date = returnNewStartDate(schedule_df)
+
+    #create new week with above date + 1
+    new_df = createWeek(machines_list, days_list, new_date)
+
+    #append new DF to the existing schedule df
+    extended_df = pd.concat([schedule_df, new_df], axis=1)
+
+    return extended_df
 
 
 def scheduleWO(schedule_df, jobs_list, wo):
@@ -115,7 +125,7 @@ def scheduleWO(schedule_df, jobs_list, wo):
     """
 
     ##check WO not allocated
-    print("Scheduling WO {} {} {}".format(wo.wo, wo.label, wo.process))
+    #print("Scheduling WO {} {} {}".format(wo.wo, wo.label, wo.process))
     #list ops on wo and ask which ops are being allocated
 
     wo_ops_list = []
