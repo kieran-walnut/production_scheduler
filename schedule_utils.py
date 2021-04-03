@@ -68,21 +68,23 @@ def exportDataframeProperty(df, property):
     new_df = copy.copy(df)  #CREATES NEW DATAFRAME OBJECT AND LEAVES THE schedule_df UNCHANGED
 
     jobs_list= []
-    for machine in machines_list[2:]:
+    for machine in machines_list:
         day_jobs_list = []
-        for day in days_list:
-            day_jobs_list.append( getattr(df[day[0]][machine], property) )
+        for col in new_df.columns:
+            #print("FOUND: {}".format(getattr(df[col][machine], property)))
+            day_jobs_list.append( getattr(df[col][machine], property) )
         jobs_list.append(day_jobs_list)
 
-
     list_row_ref = 0
-    for machine in machines_list[2:]:
+    for machine in machines_list:
         day_jobs_list = []
         list_col_ref=0
-        for day in days_list:
-            new_df.at[machine, day[0]] = jobs_list[list_row_ref][list_col_ref]
+        for col in new_df.columns:
+            new_df.at[machine, col] = jobs_list[list_row_ref][list_col_ref]
             list_col_ref += 1
         list_row_ref += 1
+    #print("New DF:\n{}".format((new_df)))
+    
 
     return new_df
 

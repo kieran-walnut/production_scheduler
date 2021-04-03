@@ -1,18 +1,7 @@
-"""
-import pandas as pd
 from tkinter import *
 import tkinter as tk
-import tkinter.font as tkFont
-from tkinter import filedialog, messagebox, ttk
-from datetime import timedelta, datetime
-import copy
-from job import Job
-from slots import Slot
-from default_machines_days import *
-"""
-
 from schedule_utils import *
-
+from draw import DrawGrid
 
 
 
@@ -48,9 +37,6 @@ start_date = datetime.today() + timedelta(days=2)    #THIS CAN BE SET VIA GUI AT
 #use WHATEVER method to render schedule to the screen! 
 #could be tkinter labels or treeview
 #should be able to click on slots and edit / insert / delete items
-
-
-
 
 
 
@@ -101,6 +87,20 @@ jobs_list = create_jobs_list(filename)   ##TO DO: round hours up to nearest 0.25
 
 
 schedule_df = createWeek(machines_list, days_list, start_date)    #CREATE INITIAL WEEK 
+
+schedule_df.at['TM-6', '05 Apr 21'].job = "50352.1"
+schedule_df.at['TM-6', '06 Apr 21'].job = "50352.1"
+schedule_df.at['TM-6', '08 Apr 21'].job = "10"
+schedule_df.at['TM-6', '11 Apr 21'].job = "50677.1.02"
+
+root = Tk()
+job_df = exportDataframeProperty(schedule_df, "job")
+app = DrawGrid(root, job_df)
+root.mainloop()
+
+
+
+"""
 schedule_df = addWeek(schedule_df)
 schedule_df = addWeek(schedule_df)
 schedule_df = addWeek(schedule_df)
@@ -108,11 +108,12 @@ schedule_df.to_csv("hope this works.csv")
 print(schedule_df)
 
 #TEST VALUES
-"""
+
 scheduleWO(schedule_df, jobs_list, jobs_list[5])
 scheduleWO(schedule_df, jobs_list, jobs_list[3])
 scheduleWO(schedule_df, jobs_list, jobs_list[77])
-#scheduleWO(schedule_df, jobs_list[99])
+scheduleWO(schedule_df, jobs_list, jobs_list[99])
+scheduleWO(schedule_df, jobs_list, jobs_list[199])
 
 
 print("Job status: {}".format(jobs_list[5].slots))
@@ -122,15 +123,17 @@ print("Job status: {}".format(jobs_list[99].slots))
 print("Job status: {}".format(jobs_list[199].slots))
 
 print("Schedule DF id{}:\n{}".format(id(schedule_df), schedule_df))
-new_df = exportDataframeProperty(schedule_df, 'job')
-new_df_hrs = exportDataframeProperty(schedule_df, 'avail_hours')
+#new_df = exportDataframeProperty(schedule_df, 'job')
+#new_df_hrs = exportDataframeProperty(schedule_df, 'avail_hours')
 
 #PRINT JOBS AND HOURS LISTS
 #pd.set_option("display.max_rows", None, "display.max_columns", None)
-print("\n\n")
-print("New DF job id: {}: \n{}".format(id(new_df), new_df))
+#print("\n\n")
+#print("New DF job id: {}: \n{}".format(id(new_df), new_df))
 #new_df.to_csv('jobs_export.csv')
-print("\n\n")
+#print("\n\n")
 #print("New DF hours id: {}: \n{}".format(id(new_df_hrs), new_df_hrs))
-new_df_hrs.to_csv('hours_export.csv')
+#new_df_hrs.to_csv('hours_export.csv')
+
+
 """
