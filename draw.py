@@ -16,10 +16,11 @@ class DrawGrid(object):
         self.columns = list(self.schedule_df)  # list of column headings in dataframe
         self.labels = []  # full list
         self.widget_rel_height = 1 / (len(self.df_rows_list)+2)
-        self.widget_piece_length = 0.9 / len(self.schedule_df.columns)
+        self.widget_piece_length = 0.9 / 7 #0.1 reserved for row labels, remainder of 0.9 divided by week days
         self.day_font = tkFont.Font(family="Calibri", size=16, weight="bold", slant="italic")
         self.op_font = tkFont.Font(family="Calibri", size=10)
         self.machine_font = tkFont.Font(family="Arial", size=25, weight="bold", slant="italic")
+        self.week_no = 0
 
         #frames etc
         self.parent = parent
@@ -30,8 +31,8 @@ class DrawGrid(object):
         self.show_details_frame = Frame(self.mainFrame)
         
         #buttons
-        self.week_back_button = Button(self.canvas, text=" < PREVIOUS WEEK").place(relx=0/7, rely=0, relwidth=1/7, relheight=self.widget_rel_height)
-        self.week_fwd_button = Button(self.canvas, text="NEXT WEEK >").place(relx=1/7, rely=0,relwidth=1/7, relheight=self.widget_rel_height)
+        self.week_back_button = Button(self.canvas, text=" < PREVIOUS WEEK", command=self.selectPrevWeek).place(relx=0/7, rely=0, relwidth=1/7, relheight=self.widget_rel_height)
+        self.week_fwd_button = Button(self.canvas, text="NEXT WEEK >", command=self.selectNextWeek).place(relx=1/7, rely=0,relwidth=1/7, relheight=self.widget_rel_height)
         self.add_job_button = Button(self.canvas, text="ADD JOB").place(relx=2/7, rely=0,relwidth=1/7, relheight=self.widget_rel_height)
         self.new_week_button = Button(self.canvas, text="ADD WEEK").place(relx=3/7, rely=0,relwidth=1/7, relheight=self.widget_rel_height)
         self.search_button = Button(self.canvas, text="SEARCH").place(relx=4/7, rely=0,relwidth=1/7, relheight=self.widget_rel_height)
@@ -39,12 +40,25 @@ class DrawGrid(object):
         self.settings_button = Button(self.canvas, text="SETTINGS").place(relx=6/7, rely=0, relwidth=1/7, relheight=self.widget_rel_height)
         self.week_label = None
 
-        self.draw_schedule()        
+        self.draw_schedule()       
 
+    def selectNextWeek(self):
+        if self.week_no + 7 <= len(self.schedule_df):
+            self.week_no += 7
+            self.draw_schedule()
+        pass
+    
+    def selectPrevWeek(self):
+        if self.week_no - 7 >= 0:
+            self.week_no -= 7
+            self.draw_schedule()
+        pass
+
+        
     def draw_schedule(self):
         #iretate through DF row by row using label length loop and create labels
         
-        week_start_date = self.schedule_df.columns[0]
+        week_start_date = self.schedule_df.columns[self.week_no]
         self.week_label = Label(self.canvas, text="WEEK COMMENCING: {}".format(week_start_date)).place(x=0, rely=self.widget_rel_height, 
         relheight=self.widget_rel_height, relwidth=1)
         
@@ -60,6 +74,7 @@ class DrawGrid(object):
         label_y_posn = 2
         for row in self.df_rows_list:
             df_list = self.schedule_df.loc[row].values.tolist()
+            df_list = df_list[self.week_no:self.week_no+7]
             df_list_length = len(df_list)
             item_ref = 0
             label_length = 1

@@ -1,6 +1,7 @@
 import pandas as pd
 from datetime import timedelta, datetime
 import copy
+import random
 from job import Job
 from slots import Slot
 from default_machines_days import *
@@ -118,7 +119,7 @@ def addWeek(schedule_df):
     return extended_df
 
 
-def scheduleWO(schedule_df, jobs_list, wo):
+def scheduleWO(schedule_df, jobs_list, wo, target_machine):
     """
     Places a WO into the schedule dataframe. Looks for all ops
     for a WO. Need to add GUI to allow which ops to be scheduled. 
@@ -147,7 +148,7 @@ def scheduleWO(schedule_df, jobs_list, wo):
 
     #get user input on machine to which op/ops are being allocated
     #target_machine = input("Enter machine name: ") ##WILL BE DONE VIA GUI
-    target_machine = 'XYZ'
+    target_machine = target_machine
     #cycle through cells in schedule_df row for machine
 
     ###FOR op in wo_ops_list:
@@ -170,4 +171,15 @@ def scheduleWO(schedule_df, jobs_list, wo):
             if wo.hours_tba > 0.25:
                 schedule_df = addWeek(schedule_df)
         wo.allocated = True
+    return schedule_df
+
+
+def testSchedFunc(schedule_df, jobs_list, numberOfTests):
+    for x in range(numberOfTests):
+        #select random machine from list
+        randomMachine = random.choice(machines_list)
+        #select random work order from job list
+        randomWO = random.choice(jobs_list)
+        #call scheduleWO function
+        schedule_df = scheduleWO(schedule_df, jobs_list, randomWO, randomMachine)
     return schedule_df
