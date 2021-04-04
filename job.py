@@ -19,7 +19,7 @@ class Job():
         self.op_no = job[6]
         self.op_desc = job[7]
         self.req_date = job[8]
-        self.label = str(job[4])[:10] + "\n" + str(job[2])[8:] + "\n" # label is mix of cust + part no
+        self.label = str(job[4])[:10] + "\n" + str(job[2])[8:20] + "\n" # label is mix of cust + part no
         self.slots = []
         self.allocated = False
         self.isLate = False

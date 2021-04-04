@@ -88,14 +88,19 @@ jobs_list = create_jobs_list(filename)   ##TO DO: round hours up to nearest 0.25
 
 schedule_df = createWeek(machines_list, days_list, start_date)    #CREATE INITIAL WEEK 
 
-schedule_df.at['TM-6', '05 Apr 21'].job = "50352.1"
-schedule_df.at['TM-6', '06 Apr 21'].job = "50352.1"
-schedule_df.at['TM-6', '08 Apr 21'].job = "10"
-schedule_df.at['TM-6', '11 Apr 21'].job = "50677.1.02"
+schedule_df = scheduleWO(schedule_df, jobs_list, jobs_list[5])
+schedule_df = scheduleWO(schedule_df, jobs_list, jobs_list[3])
+schedule_df = scheduleWO(schedule_df, jobs_list, jobs_list[77])
+schedule_df = scheduleWO(schedule_df, jobs_list, jobs_list[99])
+schedule_df = scheduleWO(schedule_df, jobs_list, jobs_list[199])
+
 
 root = Tk()
 job_df = exportDataframeProperty(schedule_df, "job")
 app = DrawGrid(root, job_df)
+
+schedule_df.to_csv("sched_job_df.csv")
+job_df.to_csv("test_job_df.csv")
 root.mainloop()
 
 
@@ -135,5 +140,10 @@ print("Schedule DF id{}:\n{}".format(id(schedule_df), schedule_df))
 #print("New DF hours id: {}: \n{}".format(id(new_df_hrs), new_df_hrs))
 #new_df_hrs.to_csv('hours_export.csv')
 
+
+schedule_df.at['TM-6', '05 Apr 21'].job = "50352.1"
+schedule_df.at['TM-6', '06 Apr 21'].job = "50352.1"
+schedule_df.at['TM-6', '08 Apr 21'].job = "10"
+schedule_df.at['TM-6', '11 Apr 21'].job = "50677.1.02"
 
 """

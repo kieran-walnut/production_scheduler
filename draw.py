@@ -18,7 +18,7 @@ class DrawGrid(object):
         self.widget_rel_height = 1 / (len(self.df_rows_list)+2)
         self.widget_piece_length = 0.9 / len(self.schedule_df.columns)
         self.day_font = tkFont.Font(family="Calibri", size=16, weight="bold", slant="italic")
-        self.op_font = tkFont.Font(family="Calibri", size=8)
+        self.op_font = tkFont.Font(family="Calibri", size=10)
         self.machine_font = tkFont.Font(family="Arial", size=25, weight="bold", slant="italic")
 
         #frames etc
@@ -67,7 +67,23 @@ class DrawGrid(object):
 
             while item_ref < df_list_length:
                 current_item = df_list[item_ref]
-                #print("Current item: {}".format(current_item))
+
+                
+                self.op_font = tkFont.Font(family="Calibri", size=10)
+                font_size = 10
+                if len(current_item) > 60:
+                    self.op_font = tkFont.Font(family="Calibri", size=5)
+                    font_size = 5
+                elif 59 < len(current_item) < 50:
+                    self.op_font = tkFont.Font(family="Calibri", size=6)
+                    font_size = 6
+                elif 49 < len(current_item) < 20:
+                    self.op_font = tkFont.Font(family="Calibri", size=7) 
+                    font_size = 7
+                
+                #if len(current_item) > 9:   
+                    print("Current item: {} LENGTH {}, SIZE: {}".format(current_item, len(current_item), font_size))
+
                 try:
                     if current_item == df_list[item_ref+1]:   #make label continuous if job runs over more than one slot
                         label_length += 1

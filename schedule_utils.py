@@ -83,8 +83,6 @@ def exportDataframeProperty(df, property):
             new_df.at[machine, col] = jobs_list[list_row_ref][list_col_ref]
             list_col_ref += 1
         list_row_ref += 1
-    #print("New DF:\n{}".format((new_df)))
-    
 
     return new_df
 
@@ -108,6 +106,7 @@ def addWeek(schedule_df):
     TO DO: Can use GUI to confirm day hours going forward
     """
     #find new week start date
+
     new_date = returnNewStartDate(schedule_df)
 
     #create new week with above date + 1
@@ -137,8 +136,8 @@ def scheduleWO(schedule_df, jobs_list, wo):
     def sort_ops(e):   ##SORT OPS LIST BY OP No
         return getattr(e, 'op_no')
     wo_ops_list.sort(key=sort_ops)
-    #print("WO ops to be allocated: \n")
     """
+    print("WO ops to be allocated: \n") 
     for wo_op in wo_ops_list:
         print("{} {}, Hours: {}".format(wo_op.op_no, wo_op.process, wo_op.hours))
     print("\n\n")
@@ -153,7 +152,6 @@ def scheduleWO(schedule_df, jobs_list, wo):
 
     ###FOR op in wo_ops_list:
     for wo in wo_ops_list:
-        #print("Scheduling {}, op {}".format(wo.label, wo.op_no))
         while wo.hours_tba > 0.25:   #while there are still hours to be allocated
             for x in range(0, schedule_df.shape[1]): #for each cell in chosen row
                 slot_hours = schedule_df.loc[target_machine][(schedule_df.columns[x])].avail_hours #get avail hours from each cell in machine row
@@ -169,24 +167,7 @@ def scheduleWO(schedule_df, jobs_list, wo):
                         schedule_df.at[target_machine, (schedule_df.columns[x])].job += wo.label  #add label 
                         wo.slots += [target_machine, (schedule_df.columns[x])] 
                         wo.hours_tba = 0
+            if wo.hours_tba > 0.25:
+                schedule_df = addWeek(schedule_df)
         wo.allocated = True
-    """
-    for x in range(schedule_df.shape[1]): 
-        print((schedule_df.columns[x]))
-        slot_hours = schedule_df.loc[target_machine][(schedule_df.columns[x])].job
-        print("Slot hours: {}".format(slot_hours))
-    """
-
-    ####else cell.avail_hours -= wo.hours, cell.job = wo.label
-    #####once wo.hours_tba < 0.25 wo.allocated = True
-    
-
-    #check if available slots are greater than required hours
-    #if yes, slot.job = wo
-    
-    #if no - ADD WEEK
-    #CAN WE CREATE NEW WEEK USING EXISTING create_week FUNCTION? 
-    #Get start date at last date in schedule + 1
-    #Create separate dataframe from create_week funtion
-    #Place the dataframe side by side with existing schedule  - pd.concat([first_df, new_df], axis=1)    ##AXIS = 1 MEANS ADD AT R.H.S. OF EXISTING DF
-
+    return schedule_df
