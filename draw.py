@@ -43,7 +43,7 @@ class DrawGrid(object):
         self.draw_schedule()       
 
     def selectNextWeek(self):
-        if self.week_no + 7 <= len(self.schedule_df):
+        if self.week_no + 7 < len(self.schedule_df.columns):
             self.week_no += 7
             self.draw_schedule()
         pass
