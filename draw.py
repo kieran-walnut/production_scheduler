@@ -1,6 +1,9 @@
 from tkinter import *
 import tkinter as tk
 import tkinter.font as tkFont
+from schedule_utils import *
+from default_machines_days import *
+
 
 
 WIDTH = 1600
@@ -9,7 +12,7 @@ HEIGHT = 600
 
 class DrawGrid(object):
     
-    def __init__(self, parent, schedule_df):  #NEED TO CHANGE JOBS LIST TO SCHEDULE_DF !!!!!!!!!!!!!!!!!!!!
+    def __init__(self, parent, schedule_df, jobs_list):  #NEED TO CHANGE JOBS LIST TO SCHEDULE_DF !!!!!!!!!!!!!!!!!!!!
         #self.jobs_list = jobs_list  # all jobs from CSV
         self.schedule_df = schedule_df  # jobs programmed in
         self.df_rows_list = list(self.schedule_df.index.values)
@@ -21,6 +24,7 @@ class DrawGrid(object):
         self.op_font = tkFont.Font(family="Calibri", size=10)
         self.machine_font = tkFont.Font(family="Arial", size=25, weight="bold", slant="italic")
         self.week_no = 0
+        self.jobs_list = jobs_list
 
         #frames etc
         self.parent = parent
@@ -33,32 +37,37 @@ class DrawGrid(object):
         #buttons
         self.week_back_button = Button(self.canvas, text=" < PREVIOUS WEEK", command=self.selectPrevWeek).place(relx=0/7, rely=0, relwidth=1/7, relheight=self.widget_rel_height)
         self.week_fwd_button = Button(self.canvas, text="NEXT WEEK >", command=self.selectNextWeek).place(relx=1/7, rely=0,relwidth=1/7, relheight=self.widget_rel_height)
-        self.add_job_button = Button(self.canvas, text="ADD JOB").place(relx=2/7, rely=0,relwidth=1/7, relheight=self.widget_rel_height)
+        self.add_job_button = Button(self.canvas, text="ADD JOB", command=self.addJob).place(relx=2/7, rely=0,relwidth=1/7, relheight=self.widget_rel_height)
         self.new_week_button = Button(self.canvas, text="ADD WEEK").place(relx=3/7, rely=0,relwidth=1/7, relheight=self.widget_rel_height)
         self.search_button = Button(self.canvas, text="SEARCH").place(relx=4/7, rely=0,relwidth=1/7, relheight=self.widget_rel_height)
         self.reports_button = Button(self.canvas, text="REPORTS").place(relx=5/7, rely=0, relwidth=1/7, relheight=self.widget_rel_height)
         self.settings_button = Button(self.canvas, text="SETTINGS").place(relx=6/7, rely=0, relwidth=1/7, relheight=self.widget_rel_height)
         self.week_label = None
-
-        self.draw_schedule()       
+     
 
     def selectNextWeek(self):
         if self.week_no + 7 < len(self.schedule_df.columns):
             self.week_no += 7
-            self.draw_schedule()
+            jobs_df = exportDataframeProperty(self.schedule_df, "job")
+            self.draw_schedule(jobs_df)
         pass
     
     def selectPrevWeek(self):
         if self.week_no - 7 >= 0:
             self.week_no -= 7
-            self.draw_schedule()
+            jobs_df = exportDataframeProperty(self.schedule_df, "job")
+            self.draw_schedule(jobs_df)
         pass
 
+    def addJob(self):
+        self.schedule_df = testSchedFunc(self.schedule_df, self.jobs_list, numberOfTests=5)
+        jobs_df = exportDataframeProperty(self.schedule_df, "job")
+        self.draw_schedule(jobs_df)
+
         
-    def draw_schedule(self):
+    def draw_schedule(self, jobs_df):
         #iretate through DF row by row using label length loop and create labels
-        
-        week_start_date = self.schedule_df.columns[self.week_no]
+        week_start_date = jobs_df.columns[self.week_no]
         self.week_label = Label(self.canvas, text="WEEK COMMENCING: {}".format(week_start_date)).place(x=0, rely=self.widget_rel_height, 
         relheight=self.widget_rel_height, relwidth=1)
         
@@ -73,7 +82,7 @@ class DrawGrid(object):
         job_row_posn = 2
         label_y_posn = 2
         for row in self.df_rows_list:
-            df_list = self.schedule_df.loc[row].values.tolist()
+            df_list = jobs_df.loc[row].values.tolist()
             df_list = df_list[self.week_no:self.week_no+7]
             df_list_length = len(df_list)
             item_ref = 0

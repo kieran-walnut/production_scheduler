@@ -87,11 +87,14 @@ jobs_list = create_jobs_list(filename)   ##TO DO: round hours up to nearest 0.25
 
 
 schedule_df = createWeek(machines_list, days_list, start_date)    #CREATE INITIAL WEEK 
-schedule_df = testSchedFunc(schedule_df, jobs_list, 400)  #TEST JOB INSERTIONS
+#schedule_df = testSchedFunc(schedule_df, jobs_list, 50)  #TEST JOB INSERTIONS
 
 root = Tk()
+
+app = DrawGrid(root, schedule_df, jobs_list)
+
 job_df = exportDataframeProperty(schedule_df, "job")
-app = DrawGrid(root, job_df)
+app.draw_schedule(job_df)
 
 #schedule_df.to_csv("sched_job_df.csv")
 #job_df.to_csv("test_job_df.csv")

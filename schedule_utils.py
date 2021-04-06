@@ -137,44 +137,52 @@ def scheduleWO(schedule_df, jobs_list, wo, target_machine):
     def sort_ops(e):   ##SORT OPS LIST BY OP No
         return getattr(e, 'op_no')
     wo_ops_list.sort(key=sort_ops)
+    
     """
     print("WO ops to be allocated: \n") 
     for wo_op in wo_ops_list:
-        print("{} {}, Hours: {}".format(wo_op.op_no, wo_op.process, wo_op.hours))
+        print("{}, {} {}, Hours: {}".format(wo_op.label, wo_op.op_no, wo_op.process, wo_op.hours))
     print("\n\n")
     """
+
     #assume all ops are being added in this test. 
     ##TO DO: confirm ops which are being scheduled via GUI
-
     #get user input on machine to which op/ops are being allocated
-    #target_machine = input("Enter machine name: ") ##WILL BE DONE VIA GUI
     target_machine = target_machine
     #cycle through cells in schedule_df row for machine
-
+    #wo_last_label = 0
     ###FOR op in wo_ops_list:
     for wo in wo_ops_list:
         while wo.hours_tba > 0.25:   #while there are still hours to be allocated
             for x in range(0, schedule_df.shape[1]): #for each cell in chosen row
                 slot_hours = schedule_df.loc[target_machine][(schedule_df.columns[x])].avail_hours #get avail hours from each cell in machine row
-                if wo.hours_tba > 0.25 and slot_hours > 0: #if the slot has available hours...
+                if wo.hours_tba > 0.25 and slot_hours > 0.24: #if the slot has available hours...
                     if wo.hours_tba > slot_hours:   #if the job is longer than the avail hours
                         schedule_df.at[target_machine, (schedule_df.columns[x])].avail_hours = 0   #make avail_hours in the cell = 0
+                        #if wo_last_label == 0:
                         schedule_df.at[target_machine, (schedule_df.columns[x])].job += wo.label   #add the WO label to the cell  ##TO DO: ADD LENGTH OF SLOT TO LABEL
-                        wo.hours_tba -= slot_hours  #remove the slot hours from the wo tba valie
+                        wo.hours_tba -= slot_hours  #remove the slot hours from the wo.tba value
                         wo.slots += [target_machine, (schedule_df.columns[x])]  #add the slot to the wo slots list
+                        #wo_last_label += 1
                     else:  #if there is room to spare in the cell
                         #print("target machine: {}, column: {},  {}".format(target_machine, x, schedule_df.at[target_machine, (schedule_df.columns[x])].avail_hours ))
                         schedule_df.at[target_machine, (schedule_df.columns[x])].avail_hours -= wo.hours_tba
+                        #if wo_last_label == 0:
                         schedule_df.at[target_machine, (schedule_df.columns[x])].job += wo.label  #add label 
                         wo.slots += [target_machine, (schedule_df.columns[x])] 
                         wo.hours_tba = 0
+                        #wo_last_label += 1
             if wo.hours_tba > 0.25:
                 schedule_df = addWeek(schedule_df)
         wo.allocated = True
+
     return schedule_df
 
 
-def testSchedFunc(schedule_df, jobs_list, numberOfTests):
+def testSchedFunc(schedule_df, jobs_list, numberOfTests=1):
+    """
+    Insert random job into random machine. 
+    """
     for x in range(numberOfTests):
         #select random machine from list
         randomMachine = random.choice(machines_list)
