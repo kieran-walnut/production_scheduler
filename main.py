@@ -84,6 +84,11 @@ jobs_list = create_jobs_list(filename)   ##TO DO: round hours up to nearest 0.25
 #start date for each machine
 
 
+#SETTINGS
+#screen size (can this be detected?)
+
+
+
 
 
 schedule_df = createWeek(machines_list, days_list, start_date)    #CREATE INITIAL WEEK 

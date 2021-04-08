@@ -1,7 +1,7 @@
 from tkinter import *
 
 def getWidgetName(event):
-    print("widget name:", str(event.widget).split(".")[-1])
+    print("widget name:", str(event.widget).split(".")[-1]) 
 
 root = Tk()
 

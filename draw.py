@@ -12,9 +12,9 @@ HEIGHT = 600
 
 class DrawGrid(object):
     
-    def __init__(self, parent, schedule_df, jobs_list):  #NEED TO CHANGE JOBS LIST TO SCHEDULE_DF !!!!!!!!!!!!!!!!!!!!
-        #self.jobs_list = jobs_list  # all jobs from CSV
+    def __init__(self, parent, schedule_df, jobs_list):  
         self.schedule_df = schedule_df  # jobs programmed in
+        self.jobs_list = jobs_list
         self.df_rows_list = list(self.schedule_df.index.values)
         self.columns = list(self.schedule_df)  # list of column headings in dataframe
         self.labels = []  # full list
@@ -24,7 +24,7 @@ class DrawGrid(object):
         self.op_font = tkFont.Font(family="Calibri", size=10)
         self.machine_font = tkFont.Font(family="Arial", size=25, weight="bold", slant="italic")
         self.week_no = 0
-        self.jobs_list = jobs_list
+
 
         #frames etc
         self.parent = parent
@@ -72,26 +72,23 @@ class DrawGrid(object):
         relheight=self.widget_rel_height, relwidth=1)
         
         machine_row_posn = 2
-        
 
         for row in self.df_rows_list: ###TO DO: ADD LEAD TIME / FIRST START DATE
             machine_label = Label(self.canvas, text=row, relief=RAISED).place(x=0, rely=machine_row_posn*self.widget_rel_height, relheight=self.widget_rel_height, relwidth=0.1)
             machine_row_posn += 1
-        
-        
-        job_row_posn = 2
-        label_y_posn = 2
+
+        label_y_posn = 2  #3rd COL - SITS TO RIGHT OF MACHINE NAMES
+        df_col_name_ref = 0
         for row in self.df_rows_list:
             df_list = jobs_df.loc[row].values.tolist()
             df_list = df_list[self.week_no:self.week_no+7]
             df_list_length = len(df_list)
-            item_ref = 0
-            label_length = 1
-            label_x_posn = 0.1
+            item_ref = 0  #for iterating through row items
+            label_length = 1 #initial length of label
+            label_x_posn = 0.1  #to sit to right of machine labels
 
             while item_ref < df_list_length:
                 current_item = df_list[item_ref]
-
                 self.op_font = self.setFont(current_item)
 
                 try:
@@ -99,20 +96,26 @@ class DrawGrid(object):
                         label_length += 1
                         item_ref += 1
                     else:
-                        job_label = Label(self.canvas, text=str(current_item), borderwidth=2, relief="groove", font=self.op_font).place(relx=label_x_posn, 
+                        widgetName = ("{},{}".format(df_col_name_ref-1, item_ref + self.week_no))
+                        job_label = Label(self.canvas, text=str(current_item), borderwidth=2, relief="groove", font=self.op_font, name=widgetName)
+                        job_label.place(relx=label_x_posn, 
                         rely=label_y_posn*self.widget_rel_height, relwidth=self.widget_piece_length*label_length, relheight=self.widget_rel_height)
+                        job_label.bind('<Button-1>', lambda event: self.showSlotContents(event))
                         self.labels.append(job_label)
-                        #label_name = 
                         item_ref += 1
                         label_x_posn += label_length*self.widget_piece_length
                         label_length = 1
                 except IndexError:
-                    job_label = Label(self.canvas, text=str(current_item), borderwidth=2, relief="groove", font=self.op_font).place(relx=label_x_posn, 
+                    widgetName = ("{},{}".format(df_col_name_ref-1, item_ref + self.week_no))
+                    job_label = Label(self.canvas, text=str(current_item), borderwidth=2, relief="groove", font=self.op_font, name=widgetName)
+                    job_label.place(relx=label_x_posn, 
                     rely=label_y_posn*self.widget_rel_height, relwidth=self.widget_piece_length*label_length, relheight=self.widget_rel_height)
+                    job_label.bind('<Button-1>', lambda event: self.showSlotContents(event))
                     self.labels.append(job_label)
                     break
             label_y_posn += 1
             label_x_posn = 0.1
+            df_col_name_ref += 1
             
 
         self.scroll = Scrollbar(self.parent, orient = HORIZONTAL, command=self.canvas.xview)
@@ -131,19 +134,57 @@ class DrawGrid(object):
     def setFont(self, current_item):     
         self.op_font = tkFont.Font(family="Calibri", size=10)
         font_size = 10
-        if len(current_item) > 60:
+        if len(current_item) > 65:
             self.op_font = tkFont.Font(family="Calibri", size=5)
             font_size = 5
-        elif 59 < len(current_item) < 50:
+        elif 64 < len(current_item) < 50:
             self.op_font = tkFont.Font(family="Calibri", size=6)
             font_size = 6
         elif 49 < len(current_item) < 20:
             self.op_font = tkFont.Font(family="Calibri", size=7) 
             font_size = 7
-        
-        #if len(current_item) > 9:   
-            print("Current item: {} LENGTH {}, SIZE: {}".format(current_item, len(current_item), font_size))
 
         return self.op_font
 
+    def showSlotContents(self, event):
+            #print("widget name:", str(event.widget).split(".")[-1])
+            widgetRefObject = str(event.widget).split(".")[-1]
+            chosenCellPosn = str(widgetRefObject).split(",")
+            row = int(chosenCellPosn[0]) + 1
+            column = int(chosenCellPosn[1])
+            wo_list = self.schedule_df.iloc[row][column].job
+
+            for wo in wo_list:
+                print("WO No: {}".format(wo.wo))
+                print("WO Customer: {}".format(wo.cust))
+                print("PROCESS: {}".format(wo.process))
+                print("WO Part: {}".format(wo.part_no))
+                print("WO Hours: {}".format(wo.hours))
+                print("\n")
+    
+    def show_job_detail(self, event):  #SHOW A WINDOW WITH JOB DETAILS   ###NOT FINISHED!!
+        widgetRefObject = str(event.widget).split(".")[-1]
+        chosenCellPosn = str(widgetRefObject).split(",")
+        row = int(chosenCellPosn[0]) + 1
+        column = int(chosenCellPosn[1])
+        wo_list = self.schedule_df.iloc[row][column].job
+        
+
+        for widget in self.canvas.winfo_children(): #clear the window
+                widget.destroy()
+        wo_label = Label(self.canvas, text ="WO ref: {}".format(job.wo))  #add details of the found job to the window
+        wo_label.grid(row=0, column=0)
+        cust_label = Label(self.canvas, text ="Customer: {}".format(job.cust))
+        cust_label.grid(row=1, column=0)
+        descr_label = Label(self.canvas, text ="Item: {}".format(job.descript))
+        descr_label.grid(row=2, column=0)
+        process_label = Label(self.canvas, text="Department: {}".format(job.process))
+        process_label.grid(row=3, column=0)
+        day_label = Label(self.canvas, text ="Start Day: {}".format(job.day))
+        day_label.grid(row=4, column=0)
+        machine_label = Label(self.canvas, text ="Machine: {}".format(job.machine))
+        machine_label.grid(row=5, column=0)
+         
+
+        
 
