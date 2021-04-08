@@ -25,7 +25,6 @@ class DrawGrid(object):
         self.machine_font = tkFont.Font(family="Arial", size=25, weight="bold", slant="italic")
         self.week_no = 0
 
-
         #frames etc
         self.parent = parent
         self.navigation_frame = Frame(self.parent)
@@ -33,7 +32,18 @@ class DrawGrid(object):
         self.mainFrame = Frame(self.canvas)
         self.navigation_frame.pack()
         self.show_details_frame = Frame(self.mainFrame)
-        
+
+        self.canvas.pack(side='left', fill='both')
+        self.canvas.create_window((4,4), window=self.mainFrame, anchor="nw") #, tags="frame"
+        #self.canvas.configure(xscrollcommand = self.scroll.set)
+        #self.scroll = Scrollbar(self.parent, orient = HORIZONTAL, command=self.canvas.xview)
+        #self.canvas.configure(xscrollcommand=self.scroll.set)
+        #self.scroll.pack(side='bottom', fill='x')
+        self.mainFrame.bind("<Configure>", self.update)
+
+        self.drawButtonsAndScroll()
+
+    def drawButtonsAndScroll(self):    
         #buttons
         self.week_back_button = Button(self.canvas, text=" < PREVIOUS WEEK", command=self.selectPrevWeek).place(relx=0/7, rely=0, relwidth=1/7, relheight=self.widget_rel_height)
         self.week_fwd_button = Button(self.canvas, text="NEXT WEEK >", command=self.selectNextWeek).place(relx=1/7, rely=0,relwidth=1/7, relheight=self.widget_rel_height)
@@ -42,8 +52,7 @@ class DrawGrid(object):
         self.search_button = Button(self.canvas, text="SEARCH").place(relx=4/7, rely=0,relwidth=1/7, relheight=self.widget_rel_height)
         self.reports_button = Button(self.canvas, text="REPORTS").place(relx=5/7, rely=0, relwidth=1/7, relheight=self.widget_rel_height)
         self.settings_button = Button(self.canvas, text="SETTINGS").place(relx=6/7, rely=0, relwidth=1/7, relheight=self.widget_rel_height)
-        self.week_label = None
-     
+        self.week_label = None   
 
     def selectNextWeek(self):
         if self.week_no + 7 < len(self.schedule_df.columns):
@@ -63,7 +72,6 @@ class DrawGrid(object):
         self.schedule_df = testSchedFunc(self.schedule_df, self.jobs_list, numberOfTests=5)
         jobs_df = exportDataframeProperty(self.schedule_df, "label")
         self.draw_schedule(jobs_df)
-
         
     def draw_schedule(self, jobs_df):
         #iretate through DF row by row using label length loop and create labels
@@ -100,7 +108,7 @@ class DrawGrid(object):
                         job_label = Label(self.canvas, text=str(current_item), borderwidth=2, relief="groove", font=self.op_font, name=widgetName)
                         job_label.place(relx=label_x_posn, 
                         rely=label_y_posn*self.widget_rel_height, relwidth=self.widget_piece_length*label_length, relheight=self.widget_rel_height)
-                        job_label.bind('<Button-1>', lambda event: self.showSlotContents(event))
+                        job_label.bind('<Button-1>', lambda event: self.showJobDetail(event))
                         self.labels.append(job_label)
                         item_ref += 1
                         label_x_posn += label_length*self.widget_piece_length
@@ -110,24 +118,13 @@ class DrawGrid(object):
                     job_label = Label(self.canvas, text=str(current_item), borderwidth=2, relief="groove", font=self.op_font, name=widgetName)
                     job_label.place(relx=label_x_posn, 
                     rely=label_y_posn*self.widget_rel_height, relwidth=self.widget_piece_length*label_length, relheight=self.widget_rel_height)
-                    job_label.bind('<Button-1>', lambda event: self.showSlotContents(event))
+                    job_label.bind('<Button-1>', lambda event: self.showJobDetail(event))
                     self.labels.append(job_label)
                     break
             label_y_posn += 1
             label_x_posn = 0.1
             df_col_name_ref += 1
-            
-
-        self.scroll = Scrollbar(self.parent, orient = HORIZONTAL, command=self.canvas.xview)
-        self.canvas.configure(xscrollcommand=self.scroll.set)
-        self.scroll.pack(side='bottom', fill='x')
-        self.canvas.pack(side='left', fill='both')
-        self.canvas.create_window((4,4), window=self.mainFrame, anchor="nw", tags="frame")
-
-        self.canvas.configure(xscrollcommand = self.scroll.set)
-        self.mainFrame.bind("<Configure>", self.update)
-
-        
+                
     def update(self, event):
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
@@ -146,45 +143,46 @@ class DrawGrid(object):
 
         return self.op_font
 
-    def showSlotContents(self, event):
-            #print("widget name:", str(event.widget).split(".")[-1])
-            widgetRefObject = str(event.widget).split(".")[-1]
-            chosenCellPosn = str(widgetRefObject).split(",")
-            row = int(chosenCellPosn[0]) + 1
-            column = int(chosenCellPosn[1])
-            wo_list = self.schedule_df.iloc[row][column].job
-
-            for wo in wo_list:
-                print("WO No: {}".format(wo.wo))
-                print("WO Customer: {}".format(wo.cust))
-                print("PROCESS: {}".format(wo.process))
-                print("WO Part: {}".format(wo.part_no))
-                print("WO Hours: {}".format(wo.hours))
-                print("\n")
     
-    def show_job_detail(self, event):  #SHOW A WINDOW WITH JOB DETAILS   ###NOT FINISHED!!
+    def showJobDetail(self, event):  #SHOW A WINDOW WITH JOB DETAILS
+        #TAKE CLICKED WIDGET DETAILS FROM THE EVENT AND FIND SPECIFIC CELL IN schedule_df
         widgetRefObject = str(event.widget).split(".")[-1]
         chosenCellPosn = str(widgetRefObject).split(",")
         row = int(chosenCellPosn[0]) + 1
         column = int(chosenCellPosn[1])
         wo_list = self.schedule_df.iloc[row][column].job
-        
-
         for widget in self.canvas.winfo_children(): #clear the window
                 widget.destroy()
-        wo_label = Label(self.canvas, text ="WO ref: {}".format(job.wo))  #add details of the found job to the window
-        wo_label.grid(row=0, column=0)
-        cust_label = Label(self.canvas, text ="Customer: {}".format(job.cust))
-        cust_label.grid(row=1, column=0)
-        descr_label = Label(self.canvas, text ="Item: {}".format(job.descript))
-        descr_label.grid(row=2, column=0)
-        process_label = Label(self.canvas, text="Department: {}".format(job.process))
-        process_label.grid(row=3, column=0)
-        day_label = Label(self.canvas, text ="Start Day: {}".format(job.day))
-        day_label.grid(row=4, column=0)
-        machine_label = Label(self.canvas, text ="Machine: {}".format(job.machine))
-        machine_label.grid(row=5, column=0)
-         
+        
+        showJobHeading = Label(self.canvas, text="JOB DETAILS: ", borderwidth=2, relief="groove", font=self.op_font)
+        showJobHeading.place(x=0, rely=self.widget_rel_height*2, 
+        relheight=self.widget_rel_height, relwidth=1)
+        
+        label_row_posn = 4
+        for wo in wo_list:        
+            label_text = "WO: {},  Customer: {},  Process: {},  Part: {},  Hours: {}\n".format(wo.wo, wo.cust, wo.process, wo.part_no, wo.hours)
+            wo_label = Label(self.canvas, text = label_text, borderwidth=2, relief="groove", font=self.op_font)
+            wo_label.place(x=0, rely=label_row_posn*self.widget_rel_height, relheight=self.widget_rel_height, relwidth=1)
+            label_row_posn += 1
+        
+        #settings_button = Button(self.canvas, text="SETTINGS").place(relx=6/7, rely=6/7, relwidth=1/7, relheight=self.widget_rel_height)
 
         
+        label_row_posn += 1
+        edit_add_button = Button(self.canvas, text="Edit / Add contents", borderwidth=3, relief="raised", font=self.op_font, command=self.butpressed)
+        edit_add_button.place(relx=0.5, anchor=CENTER, rely=5/7, relheight=self.widget_rel_height, relwidth=0.25)
+        label_row_posn += 1
+        back_button = Button(self.canvas, text="Back to schedule...", borderwidth=3, relief="raised", font=self.op_font, command=self.backToSchedule)
+        back_button.place(relx=0.5, anchor=CENTER, rely=6/7, relheight=self.widget_rel_height, relwidth=0.25)        
+        
 
+    def butpressed(self):
+        print("Button Pressed!")
+
+    def backToSchedule(self):
+        jobs_df = exportDataframeProperty(self.schedule_df, "label")
+        self.draw_schedule(jobs_df)
+        self.drawButtonsAndScroll()
+
+
+         
