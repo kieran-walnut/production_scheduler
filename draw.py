@@ -48,20 +48,20 @@ class DrawGrid(object):
     def selectNextWeek(self):
         if self.week_no + 7 < len(self.schedule_df.columns):
             self.week_no += 7
-            jobs_df = exportDataframeProperty(self.schedule_df, "job")
+            jobs_df = exportDataframeProperty(self.schedule_df, "label")
             self.draw_schedule(jobs_df)
         pass
     
     def selectPrevWeek(self):
         if self.week_no - 7 >= 0:
             self.week_no -= 7
-            jobs_df = exportDataframeProperty(self.schedule_df, "job")
+            jobs_df = exportDataframeProperty(self.schedule_df, "label")
             self.draw_schedule(jobs_df)
         pass
 
     def addJob(self):
         self.schedule_df = testSchedFunc(self.schedule_df, self.jobs_list, numberOfTests=5)
-        jobs_df = exportDataframeProperty(self.schedule_df, "job")
+        jobs_df = exportDataframeProperty(self.schedule_df, "label")
         self.draw_schedule(jobs_df)
 
         
@@ -74,7 +74,7 @@ class DrawGrid(object):
         machine_row_posn = 2
         
 
-        for row in self.df_rows_list:
+        for row in self.df_rows_list: ###TO DO: ADD LEAD TIME / FIRST START DATE
             machine_label = Label(self.canvas, text=row, relief=RAISED).place(x=0, rely=machine_row_posn*self.widget_rel_height, relheight=self.widget_rel_height, relwidth=0.1)
             machine_row_posn += 1
         

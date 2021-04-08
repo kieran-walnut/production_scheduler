@@ -93,7 +93,7 @@ root = Tk()
 
 app = DrawGrid(root, schedule_df, jobs_list)
 
-job_df = exportDataframeProperty(schedule_df, "job")
+job_df = exportDataframeProperty(schedule_df, "label")
 app.draw_schedule(job_df)
 
 #schedule_df.to_csv("sched_job_df.csv")
