@@ -150,30 +150,34 @@ class DrawGrid(object):
         chosenCellPosn = str(widgetRefObject).split(",")
         row = int(chosenCellPosn[0]) + 1
         column = int(chosenCellPosn[1])
+        avail_hours = round(self.schedule_df.iloc[row][column].avail_hours, 2)
         wo_list = self.schedule_df.iloc[row][column].job
         for widget in self.canvas.winfo_children(): #clear the window
                 widget.destroy()
         
-        showJobHeading = Label(self.canvas, text="JOB DETAILS: ", borderwidth=2, relief="groove", font=self.op_font)
-        showJobHeading.place(x=0, rely=self.widget_rel_height*2, 
+        showJobHeading = Label(self.canvas, text="JOB DETAILS: ", borderwidth=4, relief="sunken", font=self.day_font)
+        showJobHeading.place(x=0, rely=0, 
         relheight=self.widget_rel_height, relwidth=1)
         
-        label_row_posn = 4
+        label_row_posn = 2
         for wo in wo_list:        
-            label_text = "WO: {},  Customer: {},  Process: {},  Part: {},  Hours: {}\n".format(wo.wo, wo.cust, wo.process, wo.part_no, wo.hours)
+            label_text = "WO: {},  Customer: {},  Process: {},  Part: {},  Hours: {}\n".format(wo.wo, 
+            wo.cust, wo.process, wo.part_no, wo.hours)
             wo_label = Label(self.canvas, text = label_text, borderwidth=2, relief="groove", font=self.op_font)
             wo_label.place(x=0, rely=label_row_posn*self.widget_rel_height, relheight=self.widget_rel_height, relwidth=1)
             label_row_posn += 1
         
-        #settings_button = Button(self.canvas, text="SETTINGS").place(relx=6/7, rely=6/7, relwidth=1/7, relheight=self.widget_rel_height)
-
+        if len(wo_list) > 0:
+            label_row_posn += 1
+            hours_label_text = "Hours available in day: {}".format(avail_hours)
+            hours_label = Label(self.canvas, text = hours_label_text, borderwidth=2, relief="groove", font=self.op_font)
+            hours_label.place(x=0, rely=label_row_posn*self.widget_rel_height, relheight=self.widget_rel_height, relwidth=1)
         
-        label_row_posn += 1
         edit_add_button = Button(self.canvas, text="Edit / Add contents", borderwidth=3, relief="raised", font=self.op_font, command=self.butpressed)
-        edit_add_button.place(relx=0.5, anchor=CENTER, rely=5/7, relheight=self.widget_rel_height, relwidth=0.25)
-        label_row_posn += 1
+        edit_add_button.place(relx=0.35, anchor=CENTER, rely=6/7, relheight=self.widget_rel_height, relwidth=0.15)
+
         back_button = Button(self.canvas, text="Back to schedule...", borderwidth=3, relief="raised", font=self.op_font, command=self.backToSchedule)
-        back_button.place(relx=0.5, anchor=CENTER, rely=6/7, relheight=self.widget_rel_height, relwidth=0.25)        
+        back_button.place(relx=0.7, anchor=CENTER, rely=6/7, relheight=self.widget_rel_height, relwidth=0.15)        
         
 
     def butpressed(self):
